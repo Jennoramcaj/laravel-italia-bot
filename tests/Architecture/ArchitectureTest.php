@@ -16,7 +16,3 @@ describe('Architectural tests', function (): void {
         ->toUseStrictTypes()
         ->not->toUse(['ds', 'dsq', 'print_r', 'sleep']);
 });
-
-
-
-
