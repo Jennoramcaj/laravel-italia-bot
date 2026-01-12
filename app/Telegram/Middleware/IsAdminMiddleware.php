@@ -14,6 +14,7 @@ final readonly class IsAdminMiddleware
 {
     public function __invoke(Nutgram $bot, Link $next): void
     {
+        // TODO Anti-pattern. Remove
         if (app()->runningUnitTests()) {
             $next($bot);
 

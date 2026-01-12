@@ -7,6 +7,8 @@ namespace App\Telegram\Commands;
 use App\Telegram\Enums\CommandEnum;
 use SergiX44\Nutgram\Handlers\Type\Command;
 use SergiX44\Nutgram\Nutgram;
+use SergiX44\Nutgram\Telegram\Properties\ChatMemberStatus;
+use SergiX44\Nutgram\Telegram\Types\Chat\ChatMember;
 use SergiX44\Nutgram\Telegram\Types\User\User;
 
 final class BanUserCommand extends Command
@@ -40,21 +42,23 @@ final class BanUserCommand extends Command
         $chatId = $bot->chatId();
         $targetMember = $bot->getChatMember($chatId, $targetUser->id);
 
-        if ($targetMember === null) {
+        if (! $targetMember instanceof ChatMember) {
             return;
         }
 
-        if (in_array($targetMember->status, ['administrator', 'creator'], true)) {
-            $bot->sendMessage('❌ Non posso bannare un admin.');
+        /** @var ChatMemberStatus $targetMemberStatus */
+        $targetMemberStatus = $targetMember->status;
+
+        if (in_array($targetMemberStatus->value, ['administrator', 'creator'], true)) {
+            $bot->sendMessage(__('telegram.errors.cannot_ban_an_admin'));
 
             return;
         }
 
-        // 6. BAN
+        $bot->banChatMember($chatId, $targetUser->id);
 
-        // TODO
-        // $bot->banChatMember($chatId, $targetUser->id);
-
-        $bot->sendMessage("🔨L'utente @$targetUser->username ci ha lasciato. Rimarrà sempre nei nostri cuori. 🪽");
+        $bot->sendMessage(
+            text: __('telegram.messages.user_has_been_banned', ['username' => $targetUser->username])
+        );
     }
 }
