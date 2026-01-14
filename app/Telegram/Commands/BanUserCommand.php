@@ -55,7 +55,12 @@ final class BanUserCommand extends Command
             return;
         }
 
-        $bot->banChatMember($chatId, $targetUser->id);
+        // Ban user and remove all they messages
+        $bot->banChatMember(
+            chat_id: $chatId,
+            user_id: $targetUser->id,
+            revoke_messages: true
+        );
 
         $bot->sendMessage(
             text: __('telegram.messages.user_has_been_banned', ['username' => $targetUser->username])

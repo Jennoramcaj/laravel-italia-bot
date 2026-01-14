@@ -49,12 +49,12 @@ describe('when sending /ban replying to a user message', function () {
         /** @var FakeNutgram $bot */
         $bot = resolve(Nutgram::class);
 
-        //        $user = User::make(
-        //            id: 1,
-        //            is_bot: false,
-        //            first_name: 'Test',
-        //            username: 'test',
-        //        );
+        $botUser = User::make(
+            id: 99999,
+            is_bot: true,
+            first_name: 'Bot',
+            username: 'botman',
+        );
 
         $usernameToBan = 'spammer';
         $userToBan = User::make(
@@ -67,13 +67,30 @@ describe('when sending /ban replying to a user message', function () {
 
         $bot->setCommonChat($chat)
             ->hearMessage([
-                'text' => '/ban',
+                'text' => CommandEnum::Ban->command(),
                 'reply_to_message' => [
                     'from' => $userToBan->toArray(),
                     'chat' => $chat->toArray(),
                     'text' => 'Spam message',
                 ],
             ])
+            ->willReceive(result: $botUser->toArray()
+            ) // mock getMe
+            ->willReceive(result: [
+                [
+                    'status' => 'administrator',
+                    'user' => $botUser->toArray(),
+                    'can_be_edited' => true,
+                    'is_anonymous' => false,
+                    'can_manage_chat' => true,
+                    'can_delete_messages' => true,
+                    'can_manage_video_chats' => true,
+                    'can_restrict_members' => true,
+                    'can_promote_members' => true,
+                    'can_change_info' => true,
+                    'can_invite_users' => true,
+                ],
+            ]) // mock getChatAdministrators
             ->reply()
             ->assertCalled('banChatMember')
             ->assertReplyText("🔨L'utente @$usernameToBan ci ha lasciato. Rimarrà sempre nei nostri cuori. 🪽", 1);
