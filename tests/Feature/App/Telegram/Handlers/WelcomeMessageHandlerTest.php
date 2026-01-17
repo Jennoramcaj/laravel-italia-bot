@@ -17,14 +17,14 @@ function setupBotWithNewMembers(FakeNutgram $bot, Chat $chat, User $botUser, arr
 {
     return $bot->setCommonChat($chat)
         ->hearMessage([
-            'new_chat_members' => array_map(fn (User $user) => $user->toArray(), $newMembers),
+            'new_chat_members' => array_map(fn (User $user): array => $user->toArray(), $newMembers),
         ])
         ->willReceive(result: $botUser->toArray())
         ->willReceive(result: mockAdminResponse($botUser));
 }
 
-describe('when a new user enters the group', function () {
-    it('sends welcome message to users', function () {
+describe('when a new user enters the group', function (): void {
+    it('sends welcome message to users', function (): void {
         /** @var FakeNutgram $bot */
         $bot = resolve(Nutgram::class);
         $botUser = makeBotUser();
@@ -36,7 +36,7 @@ describe('when a new user enters the group', function () {
             ->assertCalled('sendMessage');
     });
 
-    test('welcome message contains correct text', function () {
+    test('welcome message contains correct text', function (): void {
         /** @var FakeNutgram $bot */
         $bot = resolve(Nutgram::class);
         $botUser = makeBotUser();
@@ -50,7 +50,7 @@ describe('when a new user enters the group', function () {
             ->assertReplyText($expectedText, index: 2);
     });
 
-    test('welcome message contains buttons', function () {
+    test('welcome message contains buttons', function (): void {
         /** @var FakeNutgram $bot */
         $bot = resolve(Nutgram::class);
         $botUser = makeBotUser();
@@ -84,6 +84,7 @@ describe('when a new user enters the group', function () {
                         if ($button['text'] === '📕 Documentazione' && $button['url'] === 'https://laravel.com/docs/') {
                             $hasDocumentationButton = true;
                         }
+
                         if ($button['text'] === '💻 Corsi gratuiti' && $button['url'] === 'https://laravelfromscratch.com') {
                             $hasFreeCourseButton = true;
                         }
@@ -94,8 +95,8 @@ describe('when a new user enters the group', function () {
             }, index: 2);
     });
 
-    describe('when no one enters the group', function () {
-        it('sends welcome message to multiple users joining at the same time', function () {
+    describe('when no one enters the group', function (): void {
+        it('sends welcome message to multiple users joining at the same time', function (): void {
             /** @var FakeNutgram $bot */
             $bot = resolve(Nutgram::class);
             $botUser = makeBotUser();
@@ -108,7 +109,7 @@ describe('when a new user enters the group', function () {
                 ->assertCalled('sendMessage', times: 2);
         });
 
-        it('does not send message when no new members', function () {
+        it('does not send message when no new members', function (): void {
             /** @var FakeNutgram $bot */
             $bot = resolve(Nutgram::class);
             $botUser = makeBotUser();
