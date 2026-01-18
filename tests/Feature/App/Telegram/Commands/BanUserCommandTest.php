@@ -4,42 +4,21 @@ declare(strict_types=1);
 
 use App\Telegram\Enums\CommandEnum;
 use SergiX44\Nutgram\Nutgram;
-use SergiX44\Nutgram\Telegram\Properties\ChatType;
-use SergiX44\Nutgram\Telegram\Types\Chat\Chat;
 use SergiX44\Nutgram\Telegram\Types\User\User;
 use SergiX44\Nutgram\Testing\FakeNutgram;
+use Tests\Fixtures\Helpers\BotHelper;
 
 describe('when sending /ban without replying to a message', function (): void {
     it('does not send any reply', function (): void {
         /** @var FakeNutgram $bot */
         $bot = resolve(Nutgram::class);
 
-        $user = User::make(
-            id: 1,
-            is_bot: false,
-            first_name: 'Test',
-            username: 'test',
-        );
+        $user = BotHelper::makeUser();
 
-        $chatId = 123;
         $bot->setCommonUser($user)
-            ->setCommonChat(Chat::make(id: $chatId, type: ChatType::GROUP))
+            ->setCommonChat(BotHelper::makeChat())
             ->hearText(CommandEnum::Ban->command())
-            ->willReceive(result: [
-                [
-                    'status' => 'administrator',
-                    'user' => $user->toArray(),
-                    'can_be_edited' => true,
-                    'is_anonymous' => false,
-                    'can_manage_chat' => true,
-                    'can_delete_messages' => true,
-                    'can_manage_video_chats' => true,
-                    'can_restrict_members' => true,
-                    'can_promote_members' => true,
-                    'can_change_info' => true,
-                    'can_invite_users' => true,
-                ],
-            ])
+            ->willReceive(result: BotHelper::mockAdminResponse($user))
             ->assertNoReply();
     });
 });
@@ -49,16 +28,12 @@ describe('when sending /ban replying to a user message', function (): void {
         /** @var FakeNutgram $bot */
         $bot = resolve(Nutgram::class);
 
-        $botUser = makeBotUser();
+        $botUser = BotHelper::makeBotUser();
 
         $usernameToBan = 'spammer';
-        $userToBan = User::make(
-            id: 2,
-            is_bot: false,
-            first_name: 'Spammer',
-            username: $usernameToBan,
-        );
-        $chat = Chat::make(id: 1, type: ChatType::GROUP);
+        $userToBan = BotHelper::makeUser(username: $usernameToBan);
+
+        $chat = BotHelper::makeChat();
 
         $bot->setCommonUser($botUser)
             ->setCommonChat($chat)
@@ -70,21 +45,7 @@ describe('when sending /ban replying to a user message', function (): void {
                     'text' => 'Spam message',
                 ],
             ])
-            ->willReceive(result: [
-                [
-                    'status' => 'administrator',
-                    'user' => $botUser->toArray(),
-                    'can_be_edited' => true,
-                    'is_anonymous' => false,
-                    'can_manage_chat' => true,
-                    'can_delete_messages' => true,
-                    'can_manage_video_chats' => true,
-                    'can_restrict_members' => true,
-                    'can_promote_members' => true,
-                    'can_change_info' => true,
-                    'can_invite_users' => true,
-                ],
-            ]) // mock getChatAdministrators (middleware - user must be admin)
+            ->willReceive(result: BotHelper::mockAdminResponse($botUser)) // mock getChatAdministrators (middleware - user must be admin)
             ->willReceivePartial(result: [
                 'status' => 'member',
                 'user' => $userToBan->toArray(),
@@ -98,15 +59,14 @@ describe('when sending /ban replying to a user message', function (): void {
         /** @var FakeNutgram $bot */
         $bot = resolve(Nutgram::class);
 
-        $memberUser = makeUser();
+        $memberUser = BotHelper::makeUser();
 
-        $userToBan = User::make(
+        $userToBan = BotHelper::makeUser(
             id: 2,
-            is_bot: false,
-            first_name: 'Spammer',
+            firstName: 'Spammer',
             username: 'spammer',
         );
-        $chat = Chat::make(id: 1, type: ChatType::GROUP);
+        $chat = BotHelper::makeChat();
 
         $bot->setCommonUser($memberUser)
             ->setCommonChat($chat)
