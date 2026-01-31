@@ -21,7 +21,8 @@ use SergiX44\Nutgram\Nutgram;
 */
 
 // Captcha handler for new members - no admin middleware required
-$bot->onNewChatMembers(CaptchaHandler::class);
+$bot->onNewChatMembers(CaptchaHandler::class)
+    ->unless(! config()->boolean('bot.captcha.enabled'));
 $bot->onCallbackQueryData('captcha:{type}:{userId}:{isCorrect}', CaptchaCallbackHandler::class);
 
 // Admin-only commands
