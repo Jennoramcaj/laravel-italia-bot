@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Telegram\Handlers;
 
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Lottery;
 use Random\RandomException;
 use SergiX44\Nutgram\Nutgram;
@@ -12,6 +13,7 @@ use SergiX44\Nutgram\Telegram\Properties\ParseMode;
 use SergiX44\Nutgram\Telegram\Types\Chat\ChatPermissions;
 use SergiX44\Nutgram\Telegram\Types\Keyboard\InlineKeyboardButton;
 use SergiX44\Nutgram\Telegram\Types\Keyboard\InlineKeyboardMarkup;
+use SergiX44\Nutgram\Telegram\Types\Message\Message;
 use SergiX44\Nutgram\Telegram\Types\User\User;
 
 final readonly class CaptchaHandler
@@ -33,30 +35,33 @@ final readonly class CaptchaHandler
 
     public function __invoke(Nutgram $bot): void
     {
-        $newChatMembers = $this->getNewChatMembers($bot);
-
-        if ($newChatMembers === []) {
-            return;
-        }
-
         $chatId = $bot->chatId();
 
         if ($chatId === null) {
             return;
         }
 
-        foreach ($newChatMembers as $newChatMember) {
-            $this->muteUser($bot, $chatId, $newChatMember->id);
-            $this->sendCaptchaChallenge($bot, $chatId, $newChatMember);
-        }
+        $this->getNewChatMembers($bot)
+            ->each(function (User $user) use ($chatId, $bot): void {
+                $this->muteUser($bot, $chatId, $user->id);
+                $this->sendCaptchaChallenge($bot, $chatId, $user);
+            });
     }
 
     /**
-     * @return User[]
+     * @return Collection<int,User>
      */
-    private function getNewChatMembers(Nutgram $bot): array
+    private function getNewChatMembers(Nutgram $bot): Collection
     {
-        return $bot->message()->new_chat_members ?? [];
+        if (! $bot->message() instanceof Message) {
+            return Collection::empty();
+        }
+
+        if ($bot->message()->new_chat_members === null) {
+            return Collection::empty();
+        }
+
+        return collect($bot->message()->new_chat_members);
     }
 
     private function muteUser(Nutgram $bot, int $chatId, int $userId): void
