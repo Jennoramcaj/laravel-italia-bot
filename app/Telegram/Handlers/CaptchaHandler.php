@@ -46,11 +46,6 @@ final class CaptchaHandler
         }
 
         foreach ($newChatMembers as $newChatMember) {
-            // Should I skip bots? Maybe no...
-            /*if ($newChatMember->is_bot) {
-                continue;
-            }*/
-
             $this->muteUser($bot, $chatId, $newChatMember->id);
             $this->sendCaptchaChallenge($bot, $chatId, $newChatMember);
         }

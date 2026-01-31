@@ -87,21 +87,6 @@ describe('when captcha is enabled', function (): void {
                 }, index: 1);
         });
 
-        //    it('skips bot users', function (): void {
-        //        /** @var FakeNutgram $bot */
-        //        $bot = resolve(Nutgram::class);
-        //        $botUser = BotHelper::makeBotUser();
-        //        $chat = BotHelper::makeChat();
-        //
-        //        $bot->setCommonUser($botUser)
-        //            ->setCommonChat($chat)
-        //            ->hearMessage([
-        //                'new_chat_members' => [$botUser->toArray()],
-        //            ])
-        //            ->reply()
-        //            ->assertNoReply();
-        //    });
-
         it('handles multiple new users', function (): void {
             /** @var FakeNutgram $bot */
             $bot = resolve(Nutgram::class);
@@ -153,7 +138,7 @@ describe('when captcha is disabled', function (): void {
             setupBotForCaptcha($bot, $chat, $newUser, [$newUser])
                 ->reply()
                 ->assertNoReply();
-            ;
+
         });
 
         it('sends a captcha challenge message', function (): void {
