@@ -5,4 +5,8 @@ return [
         'documentation_url' => 'https://laravel.com/docs/',
         'free_laravel_course' => 'https://laravelfromscratch.com',
     ],
+
+    'captcha' => [
+        'enabled' => env('CAPTCHA_ENABLED', true),
+    ],
 ];
