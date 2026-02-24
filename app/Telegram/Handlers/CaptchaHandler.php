@@ -90,10 +90,11 @@ final readonly class CaptchaHandler
 
     private function sendCaptchaChallenge(Nutgram $bot, int $chatId, User $user): void
     {
-        Lottery::odds(1, 2)
+        $this->sendMathChallenge($bot, $chatId, $user);
+        /*Lottery::odds(1, 2)
             ->winner(fn () => $this->sendMathChallenge($bot, $chatId, $user))
             ->loser(fn () => $this->sendEmojiChallenge($bot, $chatId, $user))
-            ->choose();
+            ->choose();*/
     }
 
     /**
