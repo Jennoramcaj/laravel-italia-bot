@@ -16,8 +16,8 @@ return [
         'free_courses' => '💻 Corsi gratuiti',
     ],
     'captcha' => [
-        'math_question' => "🔐 Ciao :user\n\nPer verificare che non sei un bot, rispondi alla seguente domanda:\n\n*Quanto fa :num1 \+ :num2?*",
-        'emoji_question' => "🔐 Ciao :user\n\nPer verificare che non sei un bot, seleziona l'emoji corretta:\n\n*Quale di queste è: :emoji_name?*",
+        'math_question' => "🔐 Ciao :user\n\nPer verificare che tu non sia un bot, rispondi alla seguente domanda:\n\n*Quanto fa :num1 \+ :num2?*",
+        'emoji_question' => "🔐 Ciao :user\n\nPer verificare che tu non sia un bot, seleziona l'emoji corretta:\n\n*Quale di queste è: :emoji_name?*",
         'correct_answer' => '✅ Risposta corretta! Benvenuto nel gruppo!',
         'wrong_answer' => '❌ Risposta sbagliata! Sei stato rimosso dal gruppo\. Puoi rientrare e riprovare\.',
         'not_your_captcha' => '⚠️ Questo captcha non è per te!',
