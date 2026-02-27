@@ -53,7 +53,8 @@ describe('when sending /ban replying to a user message', function (): void {
             ]) // mock getChatMember (target user is a normal member, not admin)
             ->reply()
             ->assertCalled('banChatMember')
-            ->assertReplyText("🔨L'utente [$userFirstNameToBan](tg://user?id=$userIdToBan) ci ha lasciato\. Rimarrà sempre nei nostri cuori\. 🪽", 3);
+            ->assertReplyText("🔨L'utente [$userFirstNameToBan](tg://user?id=$userIdToBan) ci ha lasciato\. Rimarrà sempre nei nostri cuori\. 🪽", 3)
+            ->assertCalled('deleteMessage');
     });
 
     it('will not ban users if user is member', function (): void {
