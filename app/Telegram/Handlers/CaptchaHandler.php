@@ -18,6 +18,21 @@ use SergiX44\Nutgram\Telegram\Types\User\User;
 
 final readonly class CaptchaHandler
 {
+    private const EMOJIS = [
+        'dog' => '🐕',
+        'cat' => '🐱',
+        'sun' => '☀️',
+        'moon' => '🌙',
+        'star' => '⭐',
+        'heart' => '❤️',
+        'tree' => '🌳',
+        'flower' => '🌸',
+        'car' => '🚗',
+        'tractor' => '🚜',
+        'clock' => '⏰',
+        'pizza' => '🍕',
+    ];
+
     public function __invoke(Nutgram $bot): void
     {
         $chatId = $bot->chatId();
@@ -75,11 +90,10 @@ final readonly class CaptchaHandler
 
     private function sendCaptchaChallenge(Nutgram $bot, int $chatId, User $user): void
     {
-        $this->sendMathChallenge($bot, $chatId, $user);
-        /*Lottery::odds(1, 2)
+        Lottery::odds(1, 2)
             ->winner(fn () => $this->sendMathChallenge($bot, $chatId, $user))
             ->loser(fn () => $this->sendEmojiChallenge($bot, $chatId, $user))
-            ->choose();*/
+            ->choose();
     }
 
     /**
@@ -118,6 +132,48 @@ final readonly class CaptchaHandler
             $buttons[] = InlineKeyboardButton::make(
                 text: (string) $answer,
                 callback_data: "captcha:math:{$user->id}:{$isCorrect}",
+            );
+        }
+
+        $keyboard->addRow(...$buttons);
+
+        $bot->sendMessage(
+            text: $text,
+            chat_id: $chatId,
+            parse_mode: ParseMode::MARKDOWN,
+            reply_markup: $keyboard,
+        );
+    }
+
+    /**
+     * @throws RandomException
+     */
+    private function sendEmojiChallenge(Nutgram $bot, int $chatId, User $user): void
+    {
+        $emojiKeys = array_keys(self::EMOJIS);
+
+        /** @var array<int, string> $emojiKeys */
+        $emojiKeys = Arr::shuffle($emojiKeys);
+
+        /** @var array<int, string> $selectedKeys */
+        $selectedKeys = array_slice($emojiKeys, 0, 4);
+
+        // Select one random key as the correct answer (0-3 since we always have 4 keys)
+        $correctKey = $selectedKeys[random_int(0, 3)];
+
+        $text = __('telegram.captcha.emoji_question', [
+            'user' => buildUserMention($user),
+            'emoji_name' => __("telegram.captcha.emojis.{$correctKey}"),
+        ]);
+
+        $keyboard = InlineKeyboardMarkup::make();
+        $buttons = [];
+
+        foreach ($selectedKeys as $key) {
+            $isCorrect = $key === $correctKey ? '1' : '0';
+            $buttons[] = InlineKeyboardButton::make(
+                text: self::EMOJIS[$key],
+                callback_data: "captcha:emoji:{$user->id}:{$isCorrect}",
             );
         }
 
