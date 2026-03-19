@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use GuzzleHttp\Psr7\Request;
 use SergiX44\Nutgram\Nutgram;
 use SergiX44\Nutgram\Telegram\Types\Chat\Chat;
 use SergiX44\Nutgram\Telegram\Types\User\User;
@@ -99,7 +100,7 @@ describe('when user answers captcha correctly', function (): void {
                 'text' => 'Welcome message',
             ])
             ->reply()
-            ->assertRaw(function (GuzzleHttp\Psr7\Request $request): bool {
+            ->assertRaw(function (Request $request): bool {
                 $body = (string) $request->getBody();
                 $data = json_decode($body, true);
 

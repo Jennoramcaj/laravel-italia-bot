@@ -1,6 +1,6 @@
 <?php
 
-/** @var SergiX44\Nutgram\Nutgram $bot */
+/** @var Nutgram $bot */
 
 use App\Telegram\Commands\BanUserCommand;
 use App\Telegram\Commands\ChatIdCommand;

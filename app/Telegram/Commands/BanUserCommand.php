@@ -9,6 +9,7 @@ use SergiX44\Nutgram\Handlers\Type\Command;
 use SergiX44\Nutgram\Nutgram;
 use SergiX44\Nutgram\Telegram\Properties\ParseMode;
 use SergiX44\Nutgram\Telegram\Types\Chat\ChatMember;
+use SergiX44\Nutgram\Telegram\Types\Message\Message;
 use SergiX44\Nutgram\Telegram\Types\User\User;
 
 final class BanUserCommand extends Command
@@ -23,7 +24,7 @@ final class BanUserCommand extends Command
 
         $reply = $bot->message()?->reply_to_message;
 
-        if (! $reply instanceof \SergiX44\Nutgram\Telegram\Types\Message\Message) {
+        if (! $reply instanceof Message) {
             return;
         }
 
