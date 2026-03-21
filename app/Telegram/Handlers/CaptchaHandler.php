@@ -18,7 +18,7 @@ use SergiX44\Nutgram\Telegram\Types\User\User;
 
 final readonly class CaptchaHandler
 {
-    private const EMOJIS = [
+    private const array EMOJIS = [
         'dog' => '🐕',
         'cat' => '🐱',
         'sun' => '☀️',
