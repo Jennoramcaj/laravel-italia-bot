@@ -14,4 +14,4 @@ jobs:
 
     steps:
       - name: Trigger Ploi deploy webhook
-        run: curl -s "${{ secrets.PLOI_DEPLOY_WEBHOOK }}"
+        run: curl -X POST -s "${{ secrets.PLOI_DEPLOY_WEBHOOK }}"
