@@ -28,6 +28,7 @@ laradumps.yaml
 .ai/mcp/mcp.json
 .claude/settings.local.json
 .claude/skills
+.codex/config.toml
 .github/skills
 .junie
 .mcp.json
