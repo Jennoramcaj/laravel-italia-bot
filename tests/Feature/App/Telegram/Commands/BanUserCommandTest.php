@@ -24,7 +24,7 @@ describe('when sending /ban without replying to a message', function (): void {
 });
 
 describe('when sending /ban replying to a user message', function (): void {
-    it('bans the user if user is admin', function (): void {
+    it('bans the user if user issuing the ban is admin', function (): void {
         /** @var FakeNutgram $bot */
         $bot = resolve(Nutgram::class);
 
@@ -53,10 +53,11 @@ describe('when sending /ban replying to a user message', function (): void {
             ]) // mock getChatMember (target user is a normal member, not admin)
             ->reply()
             ->assertCalled('banChatMember')
-            ->assertReplyText("🔨L'utente [$userFirstNameToBan](tg://user?id=$userIdToBan) ci ha lasciato\. Rimarrà sempre nei nostri cuori\. 🪽", 3);
+            ->assertReplyText("🔨L'utente [$userFirstNameToBan](tg://user?id=$userIdToBan) ci ha lasciato\. Rimarrà sempre nei nostri cuori\. 🪽", 3)
+            ->assertCalled('deleteMessage');
     });
 
-    it('will not ban users if user is member', function (): void {
+    it('will not ban users if user issuing the ban is member', function (): void {
         /** @var FakeNutgram $bot */
         $bot = resolve(Nutgram::class);
 

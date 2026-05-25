@@ -59,5 +59,7 @@ final class BanUserCommand extends Command
             text: __('telegram.messages.user_has_been_banned', ['user' => $userMention]),
             parse_mode: ParseMode::MARKDOWN,
         );
+
+        $bot->message()?->delete();
     }
 }
