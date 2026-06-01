@@ -39,8 +39,10 @@ describe('when sending /ban replying to a user message', function (): void {
         $bot->setCommonUser($botUser)
             ->setCommonChat($chat)
             ->hearMessage([
+                'message_id' => 123,
                 'text' => CommandEnum::Ban->command(),
                 'reply_to_message' => [
+                    'message_id' => 456,
                     'from' => $userToBan->toArray(),
                     'chat' => $chat->toArray(),
                     'text' => 'Spam message',
@@ -54,7 +56,11 @@ describe('when sending /ban replying to a user message', function (): void {
             ->reply()
             ->assertCalled('banChatMember')
             ->assertReplyText("🔨L'utente [$userFirstNameToBan](tg://user?id=$userIdToBan) ci ha lasciato\. Rimarrà sempre nei nostri cuori\. 🪽", 3)
-            ->assertCalled('deleteMessage');
+            ->assertReply('deleteMessage', [
+                'chat_id' => $chat->id,
+                'message_id' => 456,
+            ], 4)
+            ->assertCalled(method: 'deleteMessage', times: 2);
     });
 
     it('will not ban users if user issuing the ban is member', function (): void {

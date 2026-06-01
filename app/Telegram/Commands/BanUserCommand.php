@@ -60,6 +60,9 @@ final class BanUserCommand extends Command
             parse_mode: ParseMode::MARKDOWN,
         );
 
+        // Delete user message
+        $reply->delete();
+        // Delete bot ('/ban') message
         $bot->message()?->delete();
     }
 }
