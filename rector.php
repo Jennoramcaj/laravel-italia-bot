@@ -41,7 +41,5 @@ return RectorConfig::configure()
         LaravelSetList::LARAVEL_ELOQUENT_MAGIC_METHOD_TO_QUERY_BUILDER,
     ])
     ->withSkip([
-        EncapsedStringsToSprintfRector::class,
-        WrapEncapsedVariableInCurlyBracesRector::class,
         FlipTypeControlToUseExclusiveTypeRector::class,
     ]);
