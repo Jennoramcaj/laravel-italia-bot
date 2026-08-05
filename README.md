@@ -1,7 +1,7 @@
 # 🇮🇹 Laravel Italia Telegram Bot
 
 ![WIP](https://img.shields.io/badge/status-work%20in%20progress-orange)
-![Laravel](https://img.shields.io/badge/Laravel-12.x-FF2D20?style=flat&logo=laravel)
+![Laravel](https://img.shields.io/badge/Laravel-13.x-FF2D20?style=flat&logo=laravel)
 ![Nutgram](https://img.shields.io/badge/Nutgram-4.x-7952B3?style=flat&logo=telegram)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 

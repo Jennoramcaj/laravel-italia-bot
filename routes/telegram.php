@@ -21,15 +21,13 @@ use SergiX44\Nutgram\Nutgram;
 */
 
 // Captcha handler for new members - no admin middleware required
-$bot->onNewChatMembers(CaptchaHandler::class)
+$bot->onChatMember(CaptchaHandler::class)
     ->unless(! config()->boolean('bot.captcha.enabled'));
 $bot->onCallbackQueryData('captcha:{type}:{userId}:{isCorrect}', CaptchaCallbackHandler::class);
 
 // Admin-only commands
 $bot->group(function (Nutgram $bot): void {
     $bot->registerCommand(BanUserCommand::class);
-
-    // $bot->onNewChatMembers(WelcomeMessageHandler::class);
 
     $bot->registerCommand(ChatIdCommand::class)
         ->unless(! app()->isProduction());
@@ -39,12 +37,4 @@ $bot->group(function (Nutgram $bot): void {
     })
         ->description('The start command!')
         ->unless(! app()->isProduction());
-
-    $bot->onCommand(CommandEnum::Start->value, function (Nutgram $bot): void {
-        $bot->sendMessage('Hello, world!');
-    })
-        ->description('The start command!')
-        ->unless(! app()->isProduction());
 })->middleware(IsAdminMiddleware::class);
-
-// $bot->onNewChatMembers(WelcomeMessageHandler::class);

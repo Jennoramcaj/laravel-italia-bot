@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Support\Str;
 use SergiX44\Nutgram\Telegram\Types\User\User;
 

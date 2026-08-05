@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 use GuzzleHttp\Psr7\Request;
 use SergiX44\Nutgram\Nutgram;
+use SergiX44\Nutgram\Telegram\Properties\UpdateType;
 use SergiX44\Nutgram\Telegram\Types\Chat\Chat;
 use SergiX44\Nutgram\Telegram\Types\User\User;
 use SergiX44\Nutgram\Testing\FakeNutgram;
 use Tests\Fixtures\Helpers\BotHelper;
 
 /**
- * @param  array<User>  $newMembers
- *
  * @throws JsonException
  */
-function setupBotForCaptcha(FakeNutgram $bot, Chat $chat, User $messageSender, array $newMembers): FakeNutgram
+function setupBotForCaptcha(FakeNutgram $bot, Chat $chat, User $newMember, string $oldStatus = 'left'): FakeNutgram
 {
-    return $bot->setCommonUser($messageSender)
+    return $bot->setCommonUser($newMember)
         ->setCommonChat($chat)
-        ->hearMessage([
-            'new_chat_members' => array_map(fn (User $user): array => $user->toArray(), $newMembers),
+        ->hearUpdateType(UpdateType::CHAT_MEMBER, [
+            'old_chat_member' => ['status' => $oldStatus, 'user' => $newMember->toArray()],
+            'new_chat_member' => ['status' => 'member', 'user' => $newMember->toArray()],
         ])
         ->willReceive(result: true) // restrictChatMember response
         ->willReceive(result: [      // sendMessage response
@@ -42,7 +42,7 @@ describe('when captcha is enabled', function (): void {
             $newUser = BotHelper::makeUser();
             $chat = BotHelper::makeChat();
 
-            setupBotForCaptcha($bot, $chat, $newUser, [$newUser])
+            setupBotForCaptcha($bot, $chat, $newUser)
                 ->reply()
                 ->assertCalled('restrictChatMember');
         });
@@ -53,7 +53,7 @@ describe('when captcha is enabled', function (): void {
             $newUser = BotHelper::makeUser();
             $chat = BotHelper::makeChat();
 
-            setupBotForCaptcha($bot, $chat, $newUser, [$newUser])
+            setupBotForCaptcha($bot, $chat, $newUser)
                 ->reply()
                 ->assertCalled('sendMessage');
         });
@@ -64,7 +64,7 @@ describe('when captcha is enabled', function (): void {
             $newUser = BotHelper::makeUser();
             $chat = BotHelper::makeChat();
 
-            setupBotForCaptcha($bot, $chat, $newUser, [$newUser])
+            setupBotForCaptcha($bot, $chat, $newUser)
                 ->reply()
                 ->assertRaw(function (Request $request): bool {
                     $body = (string) $request->getBody();
@@ -88,38 +88,46 @@ describe('when captcha is enabled', function (): void {
                 }, index: 1);
         });
 
-        it('handles multiple new users', function (): void {
+        it('also mutes a user rejoining after being kicked', function (): void {
             /** @var FakeNutgram $bot */
             $bot = resolve(Nutgram::class);
-            $newUser1 = BotHelper::makeUser(1, 'Mario', 'mario_rossi');
-            $newUser2 = BotHelper::makeUser(2, 'Luigi', 'luigi_verdi');
+            $newUser = BotHelper::makeUser();
             $chat = BotHelper::makeChat();
 
-            $bot->setCommonUser($newUser1)
+            setupBotForCaptcha($bot, $chat, $newUser, oldStatus: 'kicked')
+                ->reply()
+                ->assertCalled('restrictChatMember')
+                ->assertCalled('sendMessage');
+        });
+    });
+
+    describe('when a status change is not a new member joining', function (): void {
+        it('does not send captcha when a member becomes an admin', function (): void {
+            /** @var FakeNutgram $bot */
+            $bot = resolve(Nutgram::class);
+            $user = BotHelper::makeUser();
+            $chat = BotHelper::makeChat();
+
+            $bot->setCommonUser($user)
                 ->setCommonChat($chat)
-                ->hearMessage([
-                    'new_chat_members' => [
-                        $newUser1->toArray(),
-                        $newUser2->toArray(),
+                ->hearUpdateType(UpdateType::CHAT_MEMBER, [
+                    'old_chat_member' => ['status' => 'member', 'user' => $user->toArray()],
+                    'new_chat_member' => [
+                        'status' => 'administrator',
+                        'user' => $user->toArray(),
+                        'can_be_edited' => false,
+                        'is_anonymous' => false,
+                        'can_manage_chat' => true,
+                        'can_delete_messages' => true,
+                        'can_manage_video_chats' => true,
+                        'can_restrict_members' => true,
+                        'can_promote_members' => false,
+                        'can_change_info' => true,
+                        'can_invite_users' => true,
                     ],
                 ])
-                ->willReceive(result: true) // restrictChatMember for user 1
-                ->willReceive(result: [
-                    'message_id' => 1,
-                    'chat' => $chat->toArray(),
-                    'date' => time(),
-                    'text' => 'Captcha message',
-                ])
-                ->willReceive(result: true) // restrictChatMember for user 2
-                ->willReceive(result: [
-                    'message_id' => 2,
-                    'chat' => $chat->toArray(),
-                    'date' => time(),
-                    'text' => 'Captcha message',
-                ])
                 ->reply()
-                ->assertCalled('restrictChatMember', times: 2)
-                ->assertCalled('sendMessage', times: 2);
+                ->assertNoReply();
         });
     });
 });
@@ -136,36 +144,20 @@ describe('when captcha is disabled', function (): void {
             $newUser = BotHelper::makeUser();
             $chat = BotHelper::makeChat();
 
-            setupBotForCaptcha($bot, $chat, $newUser, [$newUser])
+            setupBotForCaptcha($bot, $chat, $newUser)
                 ->reply()
                 ->assertNoReply();
-
         });
 
-        it('sends a captcha challenge message', function (): void {
+        it('does not send a captcha challenge message', function (): void {
             /** @var FakeNutgram $bot */
             $bot = resolve(Nutgram::class);
             $newUser = BotHelper::makeUser();
             $chat = BotHelper::makeChat();
 
-            setupBotForCaptcha($bot, $chat, $newUser, [$newUser])
+            setupBotForCaptcha($bot, $chat, $newUser)
                 ->reply()
                 ->assertCalled('sendMessage', 0);
         });
-    });
-});
-
-describe('when no one enters the group', function (): void {
-    it('does not send captcha when no new members', function (): void {
-        /** @var FakeNutgram $bot */
-        $bot = resolve(Nutgram::class);
-        $user = BotHelper::makeUser();
-        $chat = BotHelper::makeChat();
-
-        $bot->setCommonUser($user)
-            ->setCommonChat($chat)
-            ->hearMessage(['text' => 'Hello!'])
-            ->reply()
-            ->assertNoReply();
     });
 });

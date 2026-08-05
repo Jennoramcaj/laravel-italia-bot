@@ -5,20 +5,20 @@ declare(strict_types=1);
 namespace App\Telegram\Handlers;
 
 use Illuminate\Support\Arr;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Lottery;
 use Random\RandomException;
 use SergiX44\Nutgram\Nutgram;
+use SergiX44\Nutgram\Telegram\Properties\ChatMemberStatus;
 use SergiX44\Nutgram\Telegram\Properties\ParseMode;
+use SergiX44\Nutgram\Telegram\Types\Chat\ChatMemberUpdated;
 use SergiX44\Nutgram\Telegram\Types\Chat\ChatPermissions;
 use SergiX44\Nutgram\Telegram\Types\Keyboard\InlineKeyboardButton;
 use SergiX44\Nutgram\Telegram\Types\Keyboard\InlineKeyboardMarkup;
-use SergiX44\Nutgram\Telegram\Types\Message\Message;
 use SergiX44\Nutgram\Telegram\Types\User\User;
 
 final readonly class CaptchaHandler
 {
-    private const EMOJIS = [
+    private const array EMOJIS = [
         'dog' => '🐕',
         'cat' => '🐱',
         'sun' => '☀️',
@@ -35,33 +35,29 @@ final readonly class CaptchaHandler
 
     public function __invoke(Nutgram $bot): void
     {
+        $chatMember = $bot->chatMember();
         $chatId = $bot->chatId();
 
-        if ($chatId === null) {
+        if ($chatMember === null || $chatId === null) {
             return;
         }
 
-        $this->getNewChatMembers($bot)
-            ->each(function (User $user) use ($chatId, $bot): void {
-                $this->muteUser($bot, $chatId, $user->id);
-                $this->sendCaptchaChallenge($bot, $chatId, $user);
-            });
+        if (! $this->isNewMember($chatMember)) {
+            return;
+        }
+
+        $user = $chatMember->new_chat_member->user;
+        $this->muteUser($bot, $chatId, $user->id);
+        $this->sendCaptchaChallenge($bot, $chatId, $user);
     }
 
-    /**
-     * @return Collection<int,User>
-     */
-    private function getNewChatMembers(Nutgram $bot): Collection
+    private function isNewMember(ChatMemberUpdated $chatMember): bool
     {
-        if (! $bot->message() instanceof Message) {
-            return Collection::empty();
-        }
+        $oldStatus = $chatMember->old_chat_member->status;
+        $newStatus = $chatMember->new_chat_member->status;
 
-        if ($bot->message()->new_chat_members === null) {
-            return Collection::empty();
-        }
-
-        return collect($bot->message()->new_chat_members);
+        return in_array($oldStatus, [ChatMemberStatus::LEFT, ChatMemberStatus::KICKED], true)
+            && $newStatus === ChatMemberStatus::MEMBER;
     }
 
     private function muteUser(Nutgram $bot, int $chatId, int $userId): void
